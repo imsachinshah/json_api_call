@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:translator/translator.dart';
 
 void main() => runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
@@ -16,10 +20,10 @@ class JsonHttp extends StatefulWidget {
 class _JsonHttpState extends State<JsonHttp> {
   final String url = "https://jsonplaceholder.typicode.com/posts";
   List data;
+  final translator = GoogleTranslator();
 
   @override
   void initState() {
-    
     super.initState();
     this.jsonData();
   }
@@ -29,10 +33,22 @@ class _JsonHttpState extends State<JsonHttp> {
         .get(Uri.encodeFull(url), headers: {'Accept': 'application/json'});
     print(response);
 
+    
+
     setState(() {
-      var convertDataToJson = jsonDecode(response.body);
-      data = convertDataToJson;
+      data = jsonDecode(response.body);
+      //var translation = translator.translate(response.body, to: "en");
+      //print(translation);
+      
     });
+
+    for (int index = 0; index <= 10; index++) {
+      var translation =
+          await translator.translate(data[index]["body"], to: "en");
+      data[index]["body"] = translation;
+    }
+
+    // print(data[0]["body"]);
 
     return 'Success';
   }
@@ -51,9 +67,13 @@ class _JsonHttpState extends State<JsonHttp> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                  Card(child: Container(child: Text(data[index]["body"],
-                  ),
-                  padding: EdgeInsets.all(20.0),))
+                  Card(
+                      child: Container(
+                    child: Text(
+                      data[index]["body"],
+                    ),
+                    padding: EdgeInsets.all(20.0),
+                  ))
                 ])));
           },
         ));
